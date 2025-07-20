@@ -39,4 +39,4 @@ This project uses an Arduino to measure **temperature** (LM35 sensor) and **dist
   - Temperature in °C.  
   - Distance in cm.  
 
-![image]
+![image](https://github.com/MohammedM-git/images/blob/main/electrical%20task3.2.png?raw=true)
