@@ -1,0 +1,113 @@
+// Ultrasonic Sensor LED Control with Switch
+// Checks for wiring errors and provides feedback
+
+// Pin definitions
+const int trigPin = 2;    // Ultrasonic sensor trigger pin
+const int echoPin = 3;    // Ultrasonic sensor echo pin
+const int ledPin = 13;    // Built-in LED pin
+const int switchPin = 4;  // Switch pin (use internal pull-up)
+
+// Settings
+const int maxDistance = 50;  // Maximum distance to trigger LED (in cm)
+const int debounceDelay = 50; // Debounce delay for switch (in ms)
+
+// Variables
+unsigned long lastDebounceTime = 0;
+int switchState;
+int lastSwitchState = HIGH;
+
+void setup() {
+  // Initialize serial communication
+  Serial.begin(9600);
+  
+  // Set pin modes
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+  pinMode(ledPin, OUTPUT);
+  pinMode(switchPin, INPUT_PULLUP); // Internal pull-up resistor
+  
+  // Initial LED state
+  digitalWrite(ledPin, LOW);
+  
+  // Check for wiring errors
+  checkWiring();
+  
+  Serial.println("System ready");
+}
+
+void loop() {
+  // Check ultrasonic sensor
+  float distance = getDistance();
+  
+  // Check switch with debouncing
+  int reading = digitalRead(switchPin);
+  
+  if (reading != lastSwitchState) {
+    lastDebounceTime = millis();
+  }
+  
+  if ((millis() - lastDebounceTime) > debounceDelay) {
+    if (reading != switchState) {
+      switchState = reading;
+    }
+  }
+  
+  lastSwitchState = reading;
+  
+  // Control LED based on conditions
+  if (distance <= maxDistance || switchState == LOW) {
+    digitalWrite(ledPin, HIGH);
+  } else {
+    digitalWrite(ledPin, LOW);
+  }
+  
+  delay(100); // Small delay to stabilize readings
+}
+
+float getDistance() {
+  // Send ultrasonic pulse
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  
+  // Measure the echo time
+  long duration = pulseIn(echoPin, HIGH);
+  
+  // Calculate distance in cm
+  float distance = duration * 0.034 / 2;
+  
+  return distance;
+}
+
+void checkWiring() {
+  Serial.println("Checking wiring...");
+  
+  // Check ultrasonic sensor wiring
+  pinMode(echoPin, OUTPUT);
+  digitalWrite(echoPin, LOW);
+  pinMode(echoPin, INPUT);
+  
+  if (digitalRead(echoPin) != LOW) {
+    Serial.println("ERROR: Ultrasonic sensor not properly connected");
+    while(1); // Stop execution
+  }
+  
+  // Check LED wiring
+  digitalWrite(ledPin, HIGH);
+  delay(100);
+  if (digitalRead(ledPin) != HIGH) {
+    Serial.println("ERROR: LED not properly connected");
+    while(1); // Stop execution
+  }
+  digitalWrite(ledPin, LOW);
+  
+  // Check switch wiring
+  if (digitalRead(switchPin) != HIGH) {
+    Serial.println("ERROR: Switch not properly connected");
+    while(1); // Stop execution
+  }
+  
+  Serial.println("Wiring check passed");
+}
