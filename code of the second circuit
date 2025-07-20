@@ -1,0 +1,35 @@
+// Temperature Sensor (Analog)
+const int tempPin = A1;  
+
+// Ultrasonic Sensor (Digital)
+const int trigPin = 1;  
+const int echoPin = 2;  
+
+void setup() {
+  Serial.begin(9600);  
+  pinMode(trigPin, OUTPUT);  
+  pinMode(echoPin, INPUT);  
+}
+
+void loop() {
+  // Read Temperature (Analog)
+  float tempVoltage = analogRead(tempPin) * (5.0 / 1023.0);  
+  float tempC = tempVoltage * 100;  // For LM35 (10mV/°C)
+  
+  // Read Distance (Ultrasonic)
+  digitalWrite(trigPin, LOW);  
+  delayMicroseconds(2);  
+  digitalWrite(trigPin, HIGH);  
+  delayMicroseconds(10);  
+  digitalWrite(trigPin, LOW);  
+  long duration = pulseIn(echoPin, HIGH);  
+  float distance = duration * 0.034 / 2;  // Speed of sound (cm)
+
+  // Print Results
+  Serial.print("Temperature: ");  
+  Serial.print(tempC);  
+  Serial.print(" °C | Distance: ");  
+  Serial.print(distance);  
+  Serial.println(" cm");  
+  delay(1000);  // Update every second
+}
